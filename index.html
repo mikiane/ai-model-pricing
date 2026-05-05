@@ -84,7 +84,19 @@
         <span><span class="dot" style="background:#10B981"></span> Provider le moins cher</span>
         <span><span class="dot" style="background:#EF4444"></span> Provider le plus cher</span>
     </div>
-    <div class="sort-bar">
+    
+    <div class="tabs">
+        <button class="sort-btn active" data-tab="pricing" style="border-radius:8px 0 0 8px">Pricing</button>
+        <button class="sort-btn" data-tab="benchmarks" style="border-radius:0">Benchmark</button>
+        <button class="sort-btn" data-tab="openclaw" style="border-radius:0 8px 8px 0">OpenClaw</button>
+    </div>
+    
+    <style>
+    .tabs{display:flex;justify-content:center;gap:0;margin-bottom:2rem;flex-wrap:wrap}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    </style>
+<div class="tab-content active" id="tab-pricing"><div class="sort-bar">
         <button class="sort-btn active" data-sort="default">Trier par</button>
         <button class="sort-btn" data-sort="cheap-total">Coût total min</button>
         <button class="sort-btn" data-sort="cheap-input">Input min</button>
@@ -559,5 +571,51 @@
             });
         });
     </script>
+
+
+</div><!-- end pricing tab -->
+
+<!-- BENCHMARK VIEW -->
+<div class="tab-content" id="tab-benchmarks">
+<div class="view" id="v-benchmarks" >
+<div style="max-width:1100px;margin:0 auto;overflow-x:auto">
+<h2 style="text-align:center;margin-bottom:1rem;font-size:1.2rem;color:#E4E4F0">Benchmarks Agentic 2026</h2>
+<table class="bench-table">
+<tr>
+<th style="min-width:180px;text-align:left">Modèle</th>
+<th style="text-align:center" title="SWE-bench Verified: résolution issues GitHub réels (Python)">SWE-Ver</th>
+<th style="text-align:center" title="SWE-bench Pro: multi-langage, repos réels">SWE Pro</th>
+<th style="text-align:center" title="MCP-Atlas: tool invocation">MCP</th>
+<th style="text-align:center" title="Terminal-Bench: CLI workflows">Term</th>
+<th style="text-align:center" title="Finance Agent v1.1">Finance</th>
+<th style="text-align:center" title="Arena Coding Elo">Coding</th>
+</tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#E8554A"></span> Claude Opus 4.7</td><td class="score bs" style="text-align:center">87.6%<div class="bench-bar"><div class="bench-bar-fill" style="width:100%;background:#E8554A"></div></div></td><td class="score bs" style="text-align:center">64.3%<div class="bench-bar"><div class="bench-bar-fill" style="width:100%;background:#E8554A"></div></div></td><td class="score bs" style="text-align:center">77.3%<div class="bench-bar"><div class="bench-bar-fill" style="width:100%;background:#E8554A"></div></div></td><td class="score bn">-</td><td class="score bs" style="text-align:center">64.4%<div class="bench-bar"><div class="bench-bar-fill" style="width:100%;background:#E8554A"></div></div></td><td class="score bs" style="text-align:center">1548<div class="bench-bar"><div class="bench-bar-fill" style="width:100%;background:#E8554A"></div></div></td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#20C997"></span> GPT-5.5</td><td class="score bm" style="text-align:center">82.6%<div class="bench-bar"><div class="bench-bar-fill" style="width:93%;background:#20C997"></div></div></td><td class="score bm" style="text-align:center">58.6%<div class="bench-bar"><div class="bench-bar-fill" style="width:90%;background:#20C997"></div></div></td><td class="score bn">-</td><td class="score bs" style="text-align:center">82.7%<div class="bench-bar"><div class="bench-bar-fill" style="width:100%;background:#20C997"></div></div></td><td class="score bn">-</td><td class="score bg" style="text-align:center">1520<div class="bench-bar"><div class="bench-bar-fill" style="width:89%;background:#20C997"></div></div></td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#E8554A"></span> Claude Sonnet 4.6</td><td class="score bg" style="text-align:center">79.6%<div class="bench-bar"><div class="bench-bar-fill" style="width:90%;background:#E8554A"></div></div></td><td class="score bm" style="text-align:center">53.4%<div class="bench-bar"><div class="bench-bar-fill" style="width:82%;background:#E8554A"></div></div></td><td class="score bm" style="text-align:center">75.8%<div class="bench-bar"><div class="bench-bar-fill" style="width:95%;background:#E8554A"></div></div></td><td class="score bn">-</td><td class="score bm" style="text-align:center">60.1%<div class="bench-bar"><div class="bench-bar-fill" style="width:92%;background:#E8554A"></div></div></td><td class="score bg" style="text-align:center">1530<div class="bench-bar"><div class="bench-bar-fill" style="width:90%;background:#E8554A"></div></div></td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#6366F1"></span> DeepSeek V4 Pro</td><td class="score bm" style="text-align:center">~66%</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#EC4899"></span> Kimi K2.6</td><td class="score bm" style="text-align:center">~70%</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#10B981"></span> MiniMax M2.7</td><td class="score bm" style="text-align:center">~72.5%</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#8B5CF6"></span> GLM-5.1</td><td class="score bn">-</td><td class="score bm" style="text-align:center">58.4%</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#F59E0B"></span> Qwen 3.6 Plus</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td></tr>
+<tr><td style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:10px;height:10px;border-radius:3px;background:#1DA1F2"></span> Grok 4.3</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td><td class="score bn">-</td></tr>
+</table>
+</div>
+<div style="max-width:1100px;margin:1.5rem auto 0">
+<div class="openclaw-box">
+<h3 style="color:#6366F1;margin-bottom:.8rem">OpenClaw Recommendations</h3>
+<p style="margin-bottom:1rem;color:#A1A1B5">Pour un agent OpenClaw, le coût par session dépend du ratio input/output. En average: ~50K in + 50K out par session de codage.</p>
+<table style="width:100%;border-collapse:collapse;font-size:.8rem">
+<tr style="border-bottom:1px solid #1E1E3A"><th style="padding:.5rem;text-align:left;color:#71718A">Usage</th><th style="padding:.5rem;text-align:left;color:#71718A">Modèle</th><th style="padding:.5rem;text-align:left;color:#71718A">Coût 100K tokens</th><th style="padding:.5rem;text-align:left;color:#71718A">Pourquoi</th></tr>
+<tr style="border-bottom:1px solid rgba(30,30,58,.5)"><td><span class="tag tb">Best perf</span></td><td style="font-weight:600">Opus 4.7</td><td style="font-family:JetBrains Mono,monospace;color:#10B981">5.00</td><td>#1 SWE-Pro, MCP-Atlas, coding. Idéal pour Codex.</td></tr>
+<tr style="border-bottom:1px solid rgba(30,30,58,.5)"><td><span class="tag tv">Best value</span></td><td style="font-weight:600">Sonnet 4.6</td><td style="font-family:JetBrains Mono,monospace;color:#10B981">1.00</td><td>79.6% SWE-Ver à 40% du prix d'Opus. Usage quotidien.</td></tr>
+<tr style="border-bottom:1px solid rgba(30,30,58,.5)"><td><span class="tag tf">Budget #1</span></td><td style="font-weight:600">DeepSeek V4 Pro</td><td style="font-family:JetBrains Mono,monospace;color:#10B981">.53</td><td>10x moins cher. ~66% SWE. Bon pour questions simples.</td></tr>
+<tr style="border-bottom:1px solid rgba(30,30,58,.5)"><td><span class="tag tb">Terminal</span></td><td style="font-weight:600">GPT-5.5</td><td style="font-family:JetBrains Mono,monospace;color:#10B981">2.50</td><td>82.7% Terminal-Bench. CLI, fichiers, debugging.</td></tr>
+<tr style="border-bottom:1px solid rgba(30,30,58,.5)"><td><span class="tag tf">Swarm</span></td><td style="font-weight:600">Kimi K2.6</td><td style="font-family:JetBrains Mono,monospace;color:#10B981">.05</td><td>100 sub-agents, 1500 calls. Multi-agent coordination.</td></tr>
+<tr style="border-bottom:1px solid rgba(30,30,58,.5)"><td><span class="tag tv">Agent natif</span></td><td style="font-weight:600">MiniMax M2.7</td><td style="font-family:JetBrains Mono,monospace;color:#10B981">.77</td><td>Autonomous productivity, ~72.5% SWE, 192K ctx.</td></tr>
+</table>
+</div>
+</div>
+</div>
 </body>
 </html>
