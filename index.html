@@ -3,934 +3,561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Model Pricing Tracker</title>
+    <title>AI Model Pricing</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0A0A1A;
-            color: #E4E4F0;
-            min-height: 100vh;
-            padding: 2rem 1rem;
+            font-family:'Inter',sans-serif;
+            background:#0A0A1A; color:#E4E4F0;
+            min-height:100vh; padding:2rem 1rem;
         }
-        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header { text-align:center; margin-bottom:2rem; }
         .header h1 {
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, #6366F1, #EC4899, #F59E0B);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
+            font-size:clamp(1.6rem,4vw,2.6rem);
+            font-weight:800;
+            background:linear-gradient(135deg,#6366F1,#EC4899,#F59E0B);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            background-clip:text;
+            margin-bottom:.3rem;
         }
-        .header p { color: #71718A; font-size: 0.95rem; }
-        .header a { color: #6366F1; text-decoration: none; }
-        .legend { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; font-size: 0.8rem; color: #71718A; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-        .sort-bar { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .header p { color:#71718A; font-size:.9rem; }
+        .header a { color:#6366F1; text-decoration:none; }
+        .unit { display:inline-block; margin-top:.5rem; padding:.25rem .8rem;
+            background:#16162D; border:1px solid #1E1E3A; border-radius:20px;
+            font-size:.75rem; color:#A1A1B5; }
+        .legend { display:flex; justify-content:center; gap:1.5rem; margin:1rem 0; flex-wrap:wrap; font-size:.8rem; color:#71718A; }
+        .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:4px; }
+        .sort-bar { display:flex; justify-content:center; gap:.5rem; margin-bottom:2rem; flex-wrap:wrap; }
         .sort-btn {
-            padding: 0.5rem 1rem; border: 1px solid #2E2E4A; border-radius: 8px;
-            background: transparent; color: #A1A1B5; font-family: 'Inter', sans-serif;
-            font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+            padding:.45rem .9rem; border:1px solid #2E2E4A; border-radius:8px;
+            background:transparent; color:#A1A1B5; font-family:inherit;
+            font-size:.78rem; cursor:pointer; transition:all .2s;
         }
-        .sort-btn:hover { border-color: #6366F1; color: #6366F1; }
-        .sort-btn.active { background: #6366F1; border-color: #6366F1; color: #fff; }
-        .grid { display: grid; gap: 1.2rem; max-width: 1200px; margin: 0 auto; }
+        .sort-btn:hover { border-color:#6366F1; color:#6366F1; }
+        .sort-btn.active { background:#6366F1; border-color:#6366F1; color:#fff; }
+        .grid { display:grid; gap:1.2rem; max-width:1100px; margin:0 auto; }
         .card {
-            background: #12122A; border: 1px solid #1E1E3A; border-radius: 16px;
-            padding: 1.5rem; transition: all 0.3s ease; border-left: 4px solid;
+            background:#12122A; border:1px solid #1E1E3A; border-radius:14px;
+            padding:1.4rem; transition:all .3s; border-left:4px solid;
         }
-        .card:hover {
-            border-color: #2E2E4A; transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .card-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;
-        }
-        .model-name { display: flex; align-items: center; gap: 0.75rem; }
-        .model-color { width: 14px; height: 14px; border-radius: 4px; }
-        .model-name h2 { font-size: 1.2rem; font-weight: 700; }
-        .badge {
-            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px;
-            background: rgba(99,102,241,0.15); color: #818CF8;
-        }
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-        .price-block { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1rem; }
-        .price-block h3 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #71718A; margin-bottom: 0.6rem; }
-        .price-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; }
-        .price-label { font-size: 0.8rem; color: #A1A1B5; min-width: 55px; }
-        .price-val { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 500; }
-        .pc { color: #10B981; }
-        .pe { color: #EF4444; }
-        .pn { color: #D4D4E8; }
-        .sub { font-size: 0.72rem; color: #52526B; margin-top: 0.3rem; }
-        .agentic { margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid #1E1E3A; }
-        .ag-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: #52526B; margin-bottom: 0.3rem; }
-        .ag-text { font-size: 0.85rem; color: #A1A1B5; line-height: 1.4; }
-        .providers-toggle {
-            margin-top: 0.8rem; font-size: 0.75rem; color: #6366F1; cursor: pointer;
-            text-decoration: underline; background: none; border: none; font-family: inherit;
-        }
-        .providers-table {
-            display: none; margin-top: 0.8rem; width: 100%;
-            font-size: 0.75rem; border-collapse: collapse;
-        }
-        .providers-table.show { display: table; }
-        .providers-table th { text-align: left; padding: 0.4rem; color: #71718A; border-bottom: 1px solid #1E1E3A; font-weight: 500; }
-        .providers-table td { padding: 0.4rem; color: #A1A1B5; border-bottom: 1px solid rgba(30,30,58,0.4); font-family: 'JetBrains Mono', monospace; }
-        .providers-table td:first-child { font-family: 'Inter', sans-serif; }
-        .best-row { background: rgba(16,185,129,0.08); }
-        @media (max-width: 640px) {
-            .card { padding: 1rem; }
-            .pricing-grid { grid-template-columns: 1fr; }
-        }
+        .card:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,.3); }
+        .card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem; }
+        .card-title { display:flex; align-items:center; gap:.7rem; }
+        .dot2 { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
+        .card-title h2 { font-size:1.1rem; font-weight:700; }
+        .badge { font-size:.65rem; padding:.15rem .5rem; border-radius:20px; background:rgba(99,102,241,.15); color:#818CF8; }
+        .prices { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:.8rem; }
+        @media(max-width:500px) { .prices { grid-template-columns:1fr; } }
+        .pb { background:rgba(255,255,255,.03); border-radius:10px; padding:.9rem 1rem; }
+        .pb h3 { font-size:.65rem; text-transform:uppercase; letter-spacing:.1em; color:#71718A; margin-bottom:.5rem; }
+        .pr { display:flex; justify-content:space-between; align-items:center; margin-bottom:.3rem; }
+        .pr:last-child { margin-bottom:0; }
+        .pl { font-size:.82rem; color:#A1A1B5; min-width:50px; }
+        .pv { font-family:'JetBrains Mono',monospace; font-size:.88rem; font-weight:500; }
+        .gc { color:#10B981; }
+        .re { color:#EF4444; }
+        .pnc { color:#D4D4E8; }
+        .sub { font-size:.7rem; color:#52526B; margin-top:.4rem; }
+        .ag { padding-top:.7rem; border-top:1px solid #1E1E3A; margin-top:.8rem; }
+        .al { font-size:.6rem; text-transform:uppercase; letter-spacing:.12em; color:#52526B; margin-bottom:.25rem; }
+        .at { font-size:.82rem; color:#A1A1B5; line-height:1.4; }
+        .toggle { margin-top:.7rem; font-size:.72rem; color:#6366F1; cursor:pointer; background:none; border:none; font-family:inherit; text-decoration:underline; }
+        .ptbl { display:none; margin-top:.7rem; width:100%; font-size:.72rem; border-collapse:collapse; }
+        .ptbl.show { display:table; }
+        .ptbl th { text-align:left; padding:.35rem; color:#71718A; border-bottom:1px solid #1E1E3A; font-weight:500; }
+        .ptbl td { padding:.35rem; color:#A1A1B5; border-bottom:1px solid rgba(30,30,58,.4); font-family:'JetBrains Mono',monospace; }
+        .ptbl td:first-child { font-family:'Inter',sans-serif; }
+        .ptbl .br { background:rgba(16,185,129,.08); }
+        .summary { display:flex; justify-content:space-between; align-items:center; padding-top:.7rem; border-top:1px solid #1E1E3A; margin-top:.8rem; flex-wrap:wrap; gap:.5rem; }
+        .summary span { font-size:.75rem; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>AI Model Pricing — OpenRouter</h1>
-        <p>All prices per <strong>250K tokens</strong> · Live from <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></p>
+        <h1>AI Model Pricing</h1>
+        <p>Prix réels sur <a href="https://openrouter.ai" target="_blank">OpenRouter</a></p>
+        <div class="unit">Tous les prix sont affichés par <strong>1 million de tokens</strong></div>
     </div>
     <div class="legend">
-        <span><span class="legend-dot" style="background:#10B981"></span> Cheapest provider</span>
-        <span><span class="legend-dot" style="background:#EF4444"></span> Most expensive</span>
+        <span><span class="dot" style="background:#10B981"></span> Provider le moins cher</span>
+        <span><span class="dot" style="background:#EF4444"></span> Provider le plus cher</span>
     </div>
     <div class="sort-bar">
-        <button class="sort-btn active" data-sort="default">Default</button>
-        <button class="sort-btn" data-sort="cheap-total">Cheapest Total</button>
-        <button class="sort-btn" data-sort="cheap-input">Cheapest Input</button>
-        <button class="sort-btn" data-sort="expensive">Most Expensive</button>
+        <button class="sort-btn active" data-sort="default">Trier par</button>
+        <button class="sort-btn" data-sort="cheap-total">Coût total min</button>
+        <button class="sort-btn" data-sort="cheap-input">Input min</button>
+        <button class="sort-btn" data-sort="expensive">Coût total max</button>
     </div>
     <div class="grid" id="grid">
-
-        <div class="card" style="border-left-color:#20C997;"
-             data-cheap-total="3.5000000000000004e-05"
-             data-cheap-input="5e-06"
-             data-exp-total="3.5000000000000004e-05">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#20C997"></div>
+        <div class="card" style="border-left-color:#20C997"
+             data-ct="3.5000000000000004e-05" data-ci="5e-06" data-et="3.5000000000000004e-05">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#20C997"></div>
                     <h2>OpenAI GPT-5.5</h2>
                 </div>
                 <span class="badge">2 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$1.2500</span>
-                        <span class="price-val pc">($5.00/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$5.00</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$7.5000</span>
-                        <span class="price-val pc">($30.00/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$30.00</span>
                     </div>
                     <div class="sub">via OpenAI / OpenAI</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$1.2500</span>
-                        <span class="price-val pe">($5.00/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$5.00</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$7.5000</span>
-                        <span class="price-val pe">($30.00/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$30.00</span>
                     </div>
                     <div class="sub">via OpenAI / OpenAI</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$8.7500</span> → <span class="pe">$8.7500</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Native tool calling, structured outputs, 1M+ context, reasoning support</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.0x</span> | Output <span class="re">1.0x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$35.00</span>
+                <span style="color:#EF4444;">&#x2192; $35.00</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>OpenAI</td>
-                    <td class="pc">$0.000005</td>
-                    <td class="pc">$0.000030</td>
-                    <td class="pc">$0.000035</td>
-                    <td class="pc">$8.7500</td>
-                </tr>
-                <tr>
-                    <td>Azure</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$0.000030</td>
-                    <td class="pn">$0.000035</td>
-                    <td class="pn">$8.7500</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Native tool calling, structured outputs, 1M+ context, reasoning support</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>OpenAI</td><td class="gc">$5.00</td><td class="gc">$30.00</td><td class="gc">$35.00</td></tr>                <tr class="br"><td>Azure</td><td class="gc">$5.00</td><td class="gc">$30.00</td><td class="gc">$35.00</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#E8554A;"
-             data-cheap-total="3e-05"
-             data-cheap-input="5e-06"
-             data-exp-total="3e-05">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#E8554A"></div>
+        <div class="card" style="border-left-color:#E8554A"
+             data-ct="3e-05" data-ci="5e-06" data-et="3e-05">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#E8554A"></div>
                     <h2>Anthropic Claude Opus 4.7</h2>
                 </div>
                 <span class="badge">3 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$1.2500</span>
-                        <span class="price-val pc">($5.00/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$5.00</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$6.2500</span>
-                        <span class="price-val pc">($25.00/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$25.00</span>
                     </div>
                     <div class="sub">via Google / Google</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$1.2500</span>
-                        <span class="price-val pe">($5.00/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$5.00</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$6.2500</span>
-                        <span class="price-val pe">($25.00/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$25.00</span>
                     </div>
                     <div class="sub">via Google / Google</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$7.5000</span> → <span class="pe">$7.5000</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Long-running async agents, frontier coding, 1M context, computer use</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.0x</span> | Output <span class="re">1.0x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$30.00</span>
+                <span style="color:#EF4444;">&#x2192; $30.00</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>Google</td>
-                    <td class="pc">$0.000005</td>
-                    <td class="pc">$0.000025</td>
-                    <td class="pc">$0.000030</td>
-                    <td class="pc">$7.5000</td>
-                </tr>
-                <tr>
-                    <td>Amazon Bedrock</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$0.000025</td>
-                    <td class="pn">$0.000030</td>
-                    <td class="pn">$7.5000</td>
-                </tr>
-                <tr>
-                    <td>Anthropic</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$0.000025</td>
-                    <td class="pn">$0.000030</td>
-                    <td class="pn">$7.5000</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Long-running async agents, frontier coding, 1M context, computer use</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>Google</td><td class="gc">$5.00</td><td class="gc">$25.00</td><td class="gc">$30.00</td></tr>                <tr class="br"><td>Amazon Bedrock</td><td class="gc">$5.00</td><td class="gc">$25.00</td><td class="gc">$30.00</td></tr>                <tr class="br"><td>Anthropic</td><td class="gc">$5.00</td><td class="gc">$25.00</td><td class="gc">$30.00</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#E8554A;"
-             data-cheap-total="1.8e-05"
-             data-cheap-input="3e-06"
-             data-exp-total="1.8e-05">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#E8554A"></div>
+        <div class="card" style="border-left-color:#E8554A"
+             data-ct="1.8e-05" data-ci="3e-06" data-et="1.8e-05">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#E8554A"></div>
                     <h2>Anthropic Claude Sonnet 4.6</h2>
                 </div>
                 <span class="badge">4 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.7500</span>
-                        <span class="price-val pc">($3.00/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$3.00</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$3.7500</span>
-                        <span class="price-val pc">($15.00/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$15.00</span>
                     </div>
                     <div class="sub">via Anthropic / Anthropic</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.7500</span>
-                        <span class="price-val pe">($3.00/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$3.00</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$3.7500</span>
-                        <span class="price-val pe">($15.00/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$15.00</span>
                     </div>
                     <div class="sub">via Anthropic / Anthropic</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$4.5000</span> → <span class="pe">$4.5000</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Frontier coding + agents, 1M context, best cost-perf ratio in Sonnet class</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.0x</span> | Output <span class="re">1.0x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$18.00</span>
+                <span style="color:#EF4444;">&#x2192; $18.00</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>Anthropic</td>
-                    <td class="pc">$0.000003</td>
-                    <td class="pc">$0.000015</td>
-                    <td class="pc">$0.000018</td>
-                    <td class="pc">$4.5000</td>
-                </tr>
-                <tr>
-                    <td>Amazon Bedrock</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000015</td>
-                    <td class="pn">$0.000018</td>
-                    <td class="pn">$4.5000</td>
-                </tr>
-                <tr>
-                    <td>Google</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000015</td>
-                    <td class="pn">$0.000018</td>
-                    <td class="pn">$4.5000</td>
-                </tr>
-                <tr>
-                    <td>Azure</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000015</td>
-                    <td class="pn">$0.000018</td>
-                    <td class="pn">$4.5000</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Frontier coding + agents, 1M context, best cost-perf in Sonnet class</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>Anthropic</td><td class="gc">$3.00</td><td class="gc">$15.00</td><td class="gc">$18.00</td></tr>                <tr class="br"><td>Amazon Bedrock</td><td class="gc">$3.00</td><td class="gc">$15.00</td><td class="gc">$18.00</td></tr>                <tr class="br"><td>Google</td><td class="gc">$3.00</td><td class="gc">$15.00</td><td class="gc">$18.00</td></tr>                <tr class="br"><td>Azure</td><td class="gc">$3.00</td><td class="gc">$15.00</td><td class="gc">$18.00</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#6366F1;"
-             data-cheap-total="1.305e-06"
-             data-cheap-input="4.35e-07"
-             data-exp-total="6.5000000000000004e-06">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#6366F1"></div>
+        <div class="card" style="border-left-color:#6366F1"
+             data-ct="1.305e-06" data-ci="4.35e-07" data-et="6.5000000000000004e-06">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#6366F1"></div>
                     <h2>DeepSeek V4 Pro</h2>
                 </div>
                 <span class="badge">5 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.1087</span>
-                        <span class="price-val pc">($0.4350/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$0.4350</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$0.2175</span>
-                        <span class="price-val pc">($0.8700/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$0.8700</span>
                     </div>
                     <div class="sub">via DeepSeek / DeepSeek</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.5250</span>
-                        <span class="price-val pe">($2.10/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$2.10</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$1.1000</span>
-                        <span class="price-val pe">($4.40/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$4.40</span>
                     </div>
                     <div class="sub">via Together / Together</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">4.8x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">5.1x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$0.3262</span> → <span class="pe">$1.6250</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">1.6T MoE, advanced reasoning + coding, 1M context, 49B active params</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">4.8x</span> | Output <span class="re">5.1x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$1.30</span>
+                <span style="color:#EF4444;">&#x2192; $6.50</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>DeepSeek</td>
-                    <td class="pc">$0.000000</td>
-                    <td class="pc">$0.000001</td>
-                    <td class="pc">$0.000001</td>
-                    <td class="pc">$0.3262</td>
-                </tr>
-                <tr>
-                    <td>GMICloud</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$1.0440</td>
-                </tr>
-                <tr>
-                    <td>AtlasCloud</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$1.2750</td>
-                </tr>
-                <tr>
-                    <td>SiliconFlow</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$1.3050</td>
-                </tr>
-                <tr>
-                    <td>Together</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000007</td>
-                    <td class="pn">$1.6250</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">1.6T MoE, advanced reasoning + coding, 1M context, 49B active params</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>DeepSeek</td><td class="gc">$0.435</td><td class="gc">$0.870</td><td class="gc">$1.30</td></tr>                <tr><td>GMICloud</td><td class="pnc">$1.39</td><td class="pnc">$2.78</td><td class="pnc">$4.18</td></tr>                <tr><td>AtlasCloud</td><td class="pnc">$1.70</td><td class="pnc">$3.40</td><td class="pnc">$5.10</td></tr>                <tr><td>SiliconFlow</td><td class="pnc">$1.74</td><td class="pnc">$3.48</td><td class="pnc">$5.22</td></tr>                <tr><td>Together</td><td class="pnc">$2.10</td><td class="pnc">$4.40</td><td class="pnc">$6.50</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#F59E0B;"
-             data-cheap-total="2.275e-06"
-             data-cheap-input="3.25e-07"
-             data-exp-total="2.275e-06">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#F59E0B"></div>
+        <div class="card" style="border-left-color:#F59E0B"
+             data-ct="2.275e-06" data-ci="3.25e-07" data-et="2.275e-06">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#F59E0B"></div>
                     <h2>Qwen 3.6 Plus</h2>
                 </div>
                 <span class="badge">1 provider</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.0813</span>
-                        <span class="price-val pc">($0.3250/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$0.3250</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$0.4875</span>
-                        <span class="price-val pc">($1.95/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$1.95</span>
                     </div>
                     <div class="sub">via Alibaba / Alibaba</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.0813</span>
-                        <span class="price-val pe">($0.3250/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$0.3250</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$0.4875</span>
-                        <span class="price-val pe">($1.95/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$1.95</span>
                     </div>
                     <div class="sub">via Alibaba / Alibaba</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$0.5687</span> → <span class="pe">$0.5687</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Hybrid linear attn + MoE, 1M context, strong reasoning + tool use</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.0x</span> | Output <span class="re">1.0x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$2.27</span>
+                <span style="color:#EF4444;">&#x2192; $2.27</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>Alibaba</td>
-                    <td class="pc">$0.000000</td>
-                    <td class="pc">$0.000002</td>
-                    <td class="pc">$0.000002</td>
-                    <td class="pc">$0.5687</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Hybrid linear attn + MoE, 1M context, strong reasoning + tool use</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>Alibaba</td><td class="gc">$0.325</td><td class="gc">$1.95</td><td class="gc">$2.27</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#EC4899;"
-             data-cheap-total="4.23e-06"
-             data-cheap-input="7.4e-07"
-             data-exp-total="5.855000000000001e-06">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#EC4899"></div>
+        <div class="card" style="border-left-color:#EC4899"
+             data-ct="4.23e-06" data-ci="7.4e-07" data-et="5.855000000000001e-06">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#EC4899"></div>
                     <h2>Moonshot Kimi K2.6</h2>
                 </div>
                 <span class="badge">7 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.1850</span>
-                        <span class="price-val pc">($0.7400/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$0.7400</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$0.8725</span>
-                        <span class="price-val pc">($3.49/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$3.49</span>
                     </div>
                     <div class="sub">via Io Net / Io Net</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.3000</span>
-                        <span class="price-val pe">($1.20/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$1.20</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$1.1638</span>
-                        <span class="price-val pe">($4.66/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$4.66</span>
                     </div>
                     <div class="sub">via Together / Venice</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.6x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.3x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$1.0575</span> → <span class="pe">$1.4638</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Long-horizon coding, coding-driven UI/UX, multi-agent orchestration</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.6x</span> | Output <span class="re">1.3x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$4.23</span>
+                <span style="color:#EF4444;">&#x2192; $5.70</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>Io Net</td>
-                    <td class="pc">$0.000001</td>
-                    <td class="pc">$0.000003</td>
-                    <td class="pc">$0.000004</td>
-                    <td class="pc">$1.0575</td>
-                </tr>
-                <tr>
-                    <td>DeepInfra</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$1.0625</td>
-                </tr>
-                <tr>
-                    <td>Parasail</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$1.0750</td>
-                </tr>
-                <tr>
-                    <td>Moonshot AI</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$1.2375</td>
-                </tr>
-                <tr>
-                    <td>Cloudflare</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$1.2375</td>
-                </tr>
-                <tr>
-                    <td>Venice</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$0.000006</td>
-                    <td class="pn">$1.3763</td>
-                </tr>
-                <tr>
-                    <td>Together</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$0.000006</td>
-                    <td class="pn">$1.4250</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Long-horizon coding, UI/UX generation, multi-agent orchestration</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>Io Net</td><td class="gc">$0.740</td><td class="gc">$3.49</td><td class="gc">$4.23</td></tr>                <tr><td>DeepInfra</td><td class="pnc">$0.750</td><td class="pnc">$3.50</td><td class="pnc">$4.25</td></tr>                <tr><td>Parasail</td><td class="pnc">$0.800</td><td class="pnc">$3.50</td><td class="pnc">$4.30</td></tr>                <tr><td>Moonshot AI</td><td class="pnc">$0.950</td><td class="pnc">$4.00</td><td class="pnc">$4.95</td></tr>                <tr><td>Cloudflare</td><td class="pnc">$0.950</td><td class="pnc">$4.00</td><td class="pnc">$4.95</td></tr>                <tr><td>Venice</td><td class="pnc">$0.850</td><td class="pnc">$4.66</td><td class="pnc">$5.51</td></tr>                <tr><td>Together</td><td class="pnc">$1.20</td><td class="pnc">$4.50</td><td class="pnc">$5.70</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#10B981;"
-             data-cheap-total="1.5e-06"
-             data-cheap-input="3e-07"
-             data-exp-total="3e-06">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#10B981"></div>
+        <div class="card" style="border-left-color:#10B981"
+             data-ct="1.5e-06" data-ci="3e-07" data-et="3e-06">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#10B981"></div>
                     <h2>MiniMax M2.7</h2>
                 </div>
                 <span class="badge">4 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.0750</span>
-                        <span class="price-val pc">($0.3000/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$0.3000</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$0.3000</span>
-                        <span class="price-val pc">($1.20/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$1.20</span>
                     </div>
                     <div class="sub">via Fireworks / Fireworks</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.1500</span>
-                        <span class="price-val pe">($0.6000/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$0.6000</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$0.6000</span>
-                        <span class="price-val pe">($2.40/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$2.40</span>
                     </div>
                     <div class="sub">via SambaNova / SambaNova</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">2.0x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">2.0x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$0.3750</span> → <span class="pe">$0.7500</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Autonomous productivity, continuous improvement, 192K context</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">2.0x</span> | Output <span class="re">2.0x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$1.50</span>
+                <span style="color:#EF4444;">&#x2192; $3.00</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>Fireworks</td>
-                    <td class="pc">$0.000000</td>
-                    <td class="pc">$0.000001</td>
-                    <td class="pc">$0.000002</td>
-                    <td class="pc">$0.3750</td>
-                </tr>
-                <tr>
-                    <td>Together</td>
-                    <td class="pn">$0.000000</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.3750</td>
-                </tr>
-                <tr>
-                    <td>Minimax</td>
-                    <td class="pn">$0.000000</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.3750</td>
-                </tr>
-                <tr>
-                    <td>SambaNova</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.7500</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Autonomous productivity, continuous improvement, 192K context</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>Fireworks</td><td class="gc">$0.300</td><td class="gc">$1.20</td><td class="gc">$1.50</td></tr>                <tr class="br"><td>Together</td><td class="gc">$0.300</td><td class="gc">$1.20</td><td class="gc">$1.50</td></tr>                <tr class="br"><td>Minimax</td><td class="gc">$0.300</td><td class="gc">$1.20</td><td class="gc">$1.50</td></tr>                <tr><td>SambaNova</td><td class="pnc">$0.600</td><td class="pnc">$2.40</td><td class="pnc">$3.00</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#8B5CF6;"
-             data-cheap-total="4.55e-06"
-             data-cheap-input="1.05e-06"
-             data-exp-total="7.25e-06">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#8B5CF6"></div>
+        <div class="card" style="border-left-color:#8B5CF6"
+             data-ct="4.55e-06" data-ci="1.05e-06" data-et="7.25e-06">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#8B5CF6"></div>
                     <h2>Z.AI GLM-5.1</h2>
                 </div>
                 <span class="badge">7 providers</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.2625</span>
-                        <span class="price-val pc">($1.05/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$1.05</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$0.8750</span>
-                        <span class="price-val pc">($3.50/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$3.50</span>
                     </div>
                     <div class="sub">via Chutes / Chutes</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.4375</span>
-                        <span class="price-val pe">($1.75/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$1.75</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$1.3750</span>
-                        <span class="price-val pe">($5.50/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$5.50</span>
                     </div>
                     <div class="sub">via Venice / Venice</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.7x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.6x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$1.1375</span> → <span class="pe">$1.8125</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Major leap in coding, long-horizon tasks, 202K context</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.7x</span> | Output <span class="re">1.6x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$4.55</span>
+                <span style="color:#EF4444;">&#x2192; $7.25</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>Chutes</td>
-                    <td class="pc">$0.000001</td>
-                    <td class="pc">$0.000003</td>
-                    <td class="pc">$0.000005</td>
-                    <td class="pc">$1.1375</td>
-                </tr>
-                <tr>
-                    <td>DeepInfra</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000003</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$1.1375</td>
-                </tr>
-                <tr>
-                    <td>GMICloud</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$1.1600</td>
-                </tr>
-                <tr>
-                    <td>Z.AI</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000006</td>
-                    <td class="pn">$1.4500</td>
-                </tr>
-                <tr>
-                    <td>Together</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000006</td>
-                    <td class="pn">$1.4500</td>
-                </tr>
-                <tr>
-                    <td>SiliconFlow</td>
-                    <td class="pn">$0.000001</td>
-                    <td class="pn">$0.000004</td>
-                    <td class="pn">$0.000006</td>
-                    <td class="pn">$1.4500</td>
-                </tr>
-                <tr>
-                    <td>Venice</td>
-                    <td class="pn">$0.000002</td>
-                    <td class="pn">$0.000005</td>
-                    <td class="pn">$0.000007</td>
-                    <td class="pn">$1.8125</td>
-                </tr>
-            </table>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Major leap in coding, long-horizon tasks, 202K context</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>Chutes</td><td class="gc">$1.05</td><td class="gc">$3.50</td><td class="gc">$4.55</td></tr>                <tr class="br"><td>DeepInfra</td><td class="gc">$1.05</td><td class="gc">$3.50</td><td class="gc">$4.55</td></tr>                <tr><td>GMICloud</td><td class="pnc">$1.12</td><td class="pnc">$3.52</td><td class="pnc">$4.64</td></tr>                <tr><td>Z.AI</td><td class="pnc">$1.40</td><td class="pnc">$4.40</td><td class="pnc">$5.80</td></tr>                <tr><td>Together</td><td class="pnc">$1.40</td><td class="pnc">$4.40</td><td class="pnc">$5.80</td></tr>                <tr><td>SiliconFlow</td><td class="pnc">$1.40</td><td class="pnc">$4.40</td><td class="pnc">$5.80</td></tr>                <tr><td>Venice</td><td class="pnc">$1.75</td><td class="pnc">$5.50</td><td class="pnc">$7.25</td></tr>            </table>
         </div>
-
-        <div class="card" style="border-left-color:#1DA1F2;"
-             data-cheap-total="3.7500000000000005e-06"
-             data-cheap-input="1.25e-06"
-             data-exp-total="3.7500000000000005e-06">
-            <div class="card-header">
-                <div class="model-name">
-                    <div class="model-color" style="background:#1DA1F2"></div>
+        <div class="card" style="border-left-color:#1DA1F2"
+             data-ct="3.7500000000000005e-06" data-ci="1.25e-06" data-et="3.7500000000000005e-06">
+            <div class="card-head">
+                <div class="card-title">
+                    <div class="dot2" style="background:#1DA1F2"></div>
                     <h2>xAI Grok 4.3</h2>
                 </div>
                 <span class="badge">1 provider</span>
             </div>
-            <div class="pricing-grid">
-                <div class="price-block">
-                    <h3>Cheapest</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pc">$0.3125</span>
-                        <span class="price-val pc">($1.25/M)</span>
+            <div class="prices">
+                <div class="pb">
+                    <h3>Moins cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv gc">$1.25</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pc">$0.6250</span>
-                        <span class="price-val pc">($2.50/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv gc">$2.50</span>
                     </div>
                     <div class="sub">via xAI / xAI</div>
                 </div>
-                <div class="price-block">
-                    <h3>Most Expensive</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pe">$0.3125</span>
-                        <span class="price-val pe">($1.25/M)</span>
+                <div class="pb">
+                    <h3>Plus cher / 1M tokens</h3>
+                    <div class="pr">
+                        <span class="pl">Input</span>
+                        <span class="pv re">$1.25</span>
                     </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pe">$0.6250</span>
-                        <span class="price-val pe">($2.50/M)</span>
+                    <div class="pr">
+                        <span class="pl">Output</span>
+                        <span class="pv re">$2.50</span>
                     </div>
                     <div class="sub">via xAI / xAI</div>
                 </div>
-                <div class="price-block">
-                    <h3>Price Spread</h3>
-                    <div class="price-row">
-                        <span class="price-label">Input</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="price-row">
-                        <span class="price-label">Output</span>
-                        <span class="price-val pn">1.0x range</span>
-                    </div>
-                    <div class="sub">250K in+out: <span class="pc">$0.9375</span> → <span class="pe">$0.9375</span></div>
-                </div>
             </div>
-            <div class="agentic">
-                <div class="ag-label">Agentic capabilities</div>
-                <div class="ag-text">Reasoning model, agentic workflows, instruction-following, 1M context, image input</div>
+            <div class="summary">
+                <span style="color:#52526B;">Spread : </span>
+                <span>Input <span class="re">1.0x</span> | Output <span class="re">1.0x</span></span>
+                <span style="color:#52526B;margin-left:1rem;">Coût combiné 1M tokens in+out :</span>
+                <span class="gc">$3.75</span>
+                <span style="color:#EF4444;">&#x2192; $3.75</span>
             </div>
-            <button class="providers-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Show all providers'?'Hide providers':'Show all providers'">Show all providers</button>
-            <table class="providers-table">
-                <tr><th>Provider</th><th>Input $/M</th><th>Output $/M</th><th>Combined $/M</th><th>$ per 250K in+out</th></tr>
-                <tr class="best-row">
-                    <td>xAI</td>
-                    <td class="pc">$0.000001</td>
-                    <td class="pc">$0.000003</td>
-                    <td class="pc">$0.000004</td>
-                    <td class="pc">$0.9375</td>
-                </tr>
-            </table>
-        </div>
-    </div>
+            <div class="ag">
+                <div class="al">Capacités agentic</div>
+                <div class="at">Reasoning model, agentic workflows, instruction-following, 1M context</div>
+            </div>
+            <button class="toggle" onclick="this.nextElementSibling.classList.toggle('show');this.textContent=this.textContent==='Voir tous les providers'?'Masquer':'Voir tous les providers'">Voir tous les providers</button>
+            <table class="ptbl">
+                <tr><th>Provider</th><th>Input</th><th>Output</th><th>Combiné</th></tr>                <tr class="br"><td>xAI</td><td class="gc">$1.25</td><td class="gc">$2.50</td><td class="gc">$3.75</td></tr>            </table>
+        </div>    </div>
     <script>
         const grid = document.getElementById('grid');
         document.querySelectorAll('.sort-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                sort(btn.dataset.sort);
+                const sorted = [...grid.querySelectorAll('.card')].sort((a, b) => {
+                    switch(btn.dataset.sort) {
+                        case 'cheap-total': return parseFloat(a.dataset.ct) - parseFloat(b.dataset.ct);
+                        case 'cheap-input': return parseFloat(a.dataset.ci) - parseFloat(b.dataset.ci);
+                        case 'expensive': return parseFloat(b.dataset.et) - parseFloat(a.dataset.et);
+                        default: return 0;
+                    }
+                });
+                sorted.forEach(c => grid.appendChild(c));
             });
         });
-        function sort(mode) {
-            const cards = [...grid.querySelectorAll('.card')];
-            cards.sort((a, b) => {
-                switch(mode) {
-                    case 'cheap-total': return parseFloat(a.dataset.cheapTotal) - parseFloat(b.dataset.cheapTotal);
-                    case 'cheap-input': return parseFloat(a.dataset.cheapInput) - parseFloat(b.dataset.cheapInput);
-                    case 'expensive': return parseFloat(b.dataset.expTotal) - parseFloat(a.dataset.expTotal);
-                    default: return 0;
-                }
-            });
-            cards.forEach(c => grid.appendChild(c));
-        }
     </script>
 </body>
 </html>
